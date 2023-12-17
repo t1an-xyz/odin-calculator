@@ -32,6 +32,7 @@ html, body {
 
 #display {
     margin: 20px;
+    flex-basis: 59.2px;
     display: block;
     width: 100%;
     background-color: white;
@@ -39,6 +40,8 @@ html, body {
     border: 1px solid black;
     border-radius: 5px;
     font-size: 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 #buttons {
