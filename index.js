@@ -1,13 +1,25 @@
 const display = document.getElementById('display');
-let left = 0;
+let left = null;
 let op = '';
-let clearFlag = false;
+let right = null;
+let errorState = false;
+let ans = null;
 
 let reset = function() {
     display.innerText = '0';
-    left = 0;
+    left = null;
     op = '';
-    clearFlag = false;
+    right = null;
+    resetActiveBtns();
+    errorState = false;
+    ans = null;
+}
+
+let resetActiveBtns = function() {
+    let activeBtns = Array.from(document.getElementsByClassName('active'));
+    activeBtns.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
 }
 
 let addNumber = function(number) {
@@ -28,7 +40,7 @@ let backSpace = function() {
 }
 
 let evaluate = function() {
-    let right = parseFloat(display.innerText);
+    right = parseFloat(display.innerText);
     let result = 0;
     switch (op) {
         case 'add':
@@ -46,46 +58,58 @@ let evaluate = function() {
     }
     op = '';
     left = result;
+    right = null;
+    resetActiveBtns();
 }
 
 document.getElementById('buttons').addEventListener('click', function(event) {
     let element = event.target;
+    if (errorState) {
+        reset();
+    }
     if (element.classList.contains('number')) {
-        if (left && op === '') {
+        if (ans !== null) {
             reset();
         }
-        if (op !== '') {
-            clearFlag = true;
-        }
-        if (clearFlag) {
+        if (left === null && op !== '') {
+            left = parseFloat(display.innerText);
             display.innerText = '0';
-            clearFlag = false;
+            resetActiveBtns();
         }
         addNumber(element.innerText);
     } else if (element.id === 'clear') {
         reset();
     } else if (element.id === 'backspace') {
-        if (clearFlag) {
+        if (ans !== null) {
+            reset();
+        }
+        // If an operator has been selected, but we are not in the middle of typing a number
+        if (left === null && op !== '') {
             display.innerText = '0';
-            clearFlag = false;
+        } else {
+            backSpace();
         }
-        backSpace();
     } else if (element.classList.contains('op')) {
-        if (op && clearFlag) {
+        // If display is the RHS, first evaluate previous expression
+        if (left !== null && op !== '') {
             evaluate();
             display.innerText = left;
-        } else {
-            left = parseFloat(display.innerText);
+            left = null;
         }
+        resetActiveBtns();
         op = element.id;
+        ans = null;
+        element.classList.add('active');
     } else if (element.id === 'equals') {
-        if (op !== '' && !clearFlag) {
+        if (left !== null && op !== '') {
             evaluate();
             display.innerText = left;
-            clearFlag = true;
-        } else {
-            clearFlat = true;
+            ans = left;
+            left = null;
+        } else if (left === null && op) {
             display.innerText = 'Syntax Error';
+            resetActiveBtns();
+            errorState = true;
         }
     }
 });
